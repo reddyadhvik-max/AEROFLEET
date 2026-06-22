@@ -1,0 +1,12 @@
+{
+  "event_id": "TRK-001_HEAD_NOD_20260620_121708",
+  "event_type": "HEAD_NOD",
+  "truck_id": "TRK-001",
+  "driver_id": "unknown",
+  "driver_name": "Unknown (no FR lib)",
+  "timestamp": 1781938028.9177842,
+  "timestamp_str": "20260620_121708",
+  "full_clip_path": "C:\\Users\\reddy\\OneDrive\\Desktop\\AEROFLEET\\V2_Modular_Pipeline\\local_storage\\alerts\\TRK-001_HEAD_NOD_20260620_121708_60s.mp4",
+  "short_clip_path": "C:\\Users\\reddy\\OneDrive\\Desktop\\AEROFLEET\\V2_Modular_Pipeline\\local_storage\\alerts\\TRK-001_HEAD_NOD_20260620_121708_30s.mp4",
+  "uploaded": false
+}

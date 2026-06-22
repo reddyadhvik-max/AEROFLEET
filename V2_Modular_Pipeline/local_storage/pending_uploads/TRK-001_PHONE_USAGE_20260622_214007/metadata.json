@@ -1,0 +1,12 @@
+{
+  "event_id": "TRK-001_PHONE_USAGE_20260622_214007",
+  "event_type": "PHONE_USAGE",
+  "truck_id": "TRK-001",
+  "driver_id": "ADHVIKREDDY",
+  "driver_name": "ADHVIKREDDY",
+  "timestamp": 1782144607.3256626,
+  "timestamp_str": "20260622_214007",
+  "full_clip_path": "C:\\Users\\reddy\\OneDrive\\Desktop\\AEROFLEET\\V2_Modular_Pipeline\\local_storage\\alerts\\TRK-001_PHONE_USAGE_20260622_214007_60s.mp4",
+  "short_clip_path": "C:\\Users\\reddy\\OneDrive\\Desktop\\AEROFLEET\\V2_Modular_Pipeline\\local_storage\\alerts\\TRK-001_PHONE_USAGE_20260622_214007_20s.mp4",
+  "uploaded": false
+}

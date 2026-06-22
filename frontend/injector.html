@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aerofleet — Anomaly Injector</title>
+    <meta name="description" content="OBD-II override and alert trigger control panel for testing">
+    
+    <!-- Custom Styles (includes font imports) -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="injector-page">
+        <!-- Success Popup -->
+        <div id="success-popup" class="success-popup">
+            ✓ Overrides Applied Successfully
+        </div>
+
+        <!-- Header -->
+        <div class="injector-header">
+            <div>
+                <h1><span class="warn-icon">⚠</span> Anomaly Injector</h1>
+                <p>OBD-II Override & Alert Trigger Control</p>
+            </div>
+            <select id="target-truck" class="injector-truck-select">
+                <option value="TRK-001">TRK-001 — Freightliner Cascadia</option>
+                <option value="TRK-002" selected>TRK-002 — Volvo VNL</option>
+                <option value="TRK-003">TRK-003 — Peterbilt 579</option>
+            </select>
+        </div>
+
+        <!-- Body -->
+        <div class="injector-body">
+            <!-- OBD-II Overrides -->
+            <div class="slider-section">
+                <div class="section-title">OBD-II Overrides</div>
+                <div id="sliders-container"></div>
+                <div style="display:flex;gap:8px;margin-top:20px;">
+                    <button id="apply-overrides" class="btn-danger" style="flex:1;">Apply Overrides</button>
+                    <button id="clear-overrides" class="btn-neutral" style="flex:1;">Clear All</button>
+                </div>
+            </div>
+
+            <!-- Force Alert -->
+            <div class="force-section">
+                <div class="section-title">Force Alert Event</div>
+                <label style="display:block;font-size:10px;text-transform:uppercase;letter-spacing:2px;color:var(--text-muted);margin-bottom:6px;">Select Alert Type & Tier</label>
+                <select id="alert-type-selector" style="width:100%;background:var(--bg-primary);border:1px solid var(--border-harsh);color:var(--text-primary);font-family:var(--font-mono);font-size:11px;padding:10px;outline:none;margin-bottom:8px;">
+                    <option value="CRITICAL|Collision / Accident">⚠ Critical: Collision / Accident</option>
+                    <option value="CRITICAL|Medical Emergency">⚠ Critical: Medical Emergency</option>
+                    <option value="HIGH|Phone use while driving" selected>▲ High: Phone use while driving</option>
+                    <option value="HIGH|Drowsiness detected">▲ High: Drowsiness detected</option>
+                    <option value="HIGH|Engine Fault">▲ High: Engine Fault</option>
+                    <option value="MEDIUM|Traffic Incident">● Medium: Traffic Incident</option>
+                    <option value="LOW|Route deviation">○ Low: Route deviation</option>
+                </select>
+                <button id="force-alert-btn" class="force-alert-btn">Force Alert on Truck</button>
+                <div id="alert-status" style="font-size:10px;color:var(--text-muted);text-align:center;margin-top:8px;min-height:16px;"></div>
+
+                <div class="triggers-info">
+                    <div class="triggers-title">Automated Alert Triggers</div>
+                    <ul>
+                        <li>Speed > 85 km/h → Speed Violation (CRITICAL)</li>
+                        <li>Brake G > 0.4g → Harsh Braking (CRITICAL)</li>
+                        <li>Tyre PSI < 90 → Low Pressure (HIGH)</li>
+                        <li>Fuel Drop > 10% → Suspected Theft (CRITICAL)</li>
+                        <li>Coolant > profile max → Overheating (HIGH)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="injector.js"></script>
+</body>
+</html>

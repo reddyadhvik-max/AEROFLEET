@@ -1,0 +1,11 @@
+{
+  "drivers": [
+    {
+      "id": "DRV-001",
+      "name": "ARS",
+      "label": 1,
+      "assigned_truck": "TRK-001",
+      "enrolled_at": "2026-06-20T13:39:32Z"
+    }
+  ]
+}

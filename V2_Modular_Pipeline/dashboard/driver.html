@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEROFLEET - Driver Terminal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    
+    <!-- MapLibre GL JS -->
+    <script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css" rel="stylesheet" />
+    
+    <style>
+        .map-container {
+            width: 100%;
+            height: 500px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .driver-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        
+        .route-controls {
+            margin-bottom: 15px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .route-controls input {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+        }
+        
+        .camera-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .cam-feed {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #000;
+        }
+        
+        .emergency-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .emergency-card {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .emergency-card h4 { color: #f87171; margin-bottom: 5px; }
+        .emergency-card p { font-size: 1.2rem; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo">AEROFLEET</div>
+        <div class="sys-time" id="sys-time">00:00:00</div>
+        
+        <div style="padding: 15px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 15px;">
+            <div style="font-size: 0.9rem; color: var(--text-muted);">Logged in as</div>
+            <div style="font-weight: bold; color: var(--primary);" id="current-driver-name">Loading...</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;" id="current-truck-id"></div>
+        </div>
+        
+        <div class="nav-item active" onclick="switchTab('nav-tab', this)">
+            <span class="icon">🗺️</span> Navigation
+        </div>
+        <div class="nav-item" onclick="switchTab('cam-tab', this)">
+            <span class="icon">📹</span> Live Cameras
+        </div>
+        <div class="nav-item" onclick="switchTab('safety-tab', this)">
+            <span class="icon">🛡️</span> Safety & Alerts
+        </div>
+        
+        <div style="flex-grow: 1;"></div>
+        <div class="nav-item" style="color: #ef4444; margin-top: auto;" onclick="logout()">
+            <span class="icon">🚪</span> Log Out
+        </div>
+    </div>
+
+    <div class="main-content">
+        <!-- DRIVER VERIFICATION BADGE -->
+        <div id="driver-status-badge" style="position: absolute; top: 32px; right: 48px; padding: 10px 20px; border-radius: 8px; font-weight: 600; display: flex; align-items: center; gap: 10px; z-index: 100; background: var(--surface-elevated); border: 1px solid var(--border-subtle);">
+            <div id="driver-status-dot" style="width: 12px; height: 12px; border-radius: 50%; background-color: gray;"></div>
+            <span id="driver-status-text">Checking Verification...</span>
+            <button onclick="forceVerify()" style="margin-left: 15px; padding: 6px 12px; background: var(--primary); border: none; border-radius: 4px; color: white; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: background 0.2s;">Manual Verify</button>
+        </div>
+
+        <!-- TAB 1: NAVIGATION -->
+        <div id="nav-tab" class="tab-pane active">
+            <div class="header">
+                <h2>Route Navigation</h2>
+            </div>
+            
+            <div class="driver-layout">
+                <div>
+                    <div class="route-controls">
+                        <input type="text" id="start-loc" placeholder="Starting Location (e.g. New York, NY)">
+                        <input type="text" id="end-loc" placeholder="Destination (e.g. Boston, MA)">
+                        <button class="btn btn-primary" onclick="calculateRoute()">Set Route</button>
+                    </div>
+                    <div class="route-controls" style="justify-content: flex-end; margin-top: -5px;">
+                        <button class="btn btn-primary" id="start-journey-btn" onclick="startJourney()" style="background-color: var(--accent); border-color: var(--accent); display: none;">Start Journey</button>
+                        <button class="btn btn-primary" id="halt-journey-btn" onclick="haltJourney()" style="background-color: #f59e0b; border-color: #f59e0b; display: none;">Halt Journey</button>
+                        <button class="btn btn-primary" id="end-journey-btn" onclick="endJourney()" style="background-color: #ef4444; border-color: #ef4444; display: none;">End Journey</button>
+                    </div>
+                    <div id="driver-map" class="map-container"></div>
+                </div>
+                
+                <div class="vehicle-readings">
+                    <div class="card stat-card" style="margin-bottom: 15px;">
+                        <div class="stat-value" id="sim-speed">0 km/h</div>
+                        <div class="stat-label">Current Speed</div>
+                    </div>
+                    <div class="card stat-card" style="margin-bottom: 15px;">
+                        <div class="stat-value" id="sim-rpm">0</div>
+                        <div class="stat-label">Engine RPM</div>
+                    </div>
+                    <div class="card stat-card" style="margin-bottom: 15px;">
+                        <div class="stat-value" id="sim-fuel">100%</div>
+                        <div class="stat-label">Fuel Level</div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-value" id="sim-dist">0 km</div>
+                        <div class="stat-label">Distance to Dest.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: LIVE CAMERAS -->
+        <div id="cam-tab" class="tab-pane">
+            <div class="header">
+                <h2>Camera Feeds</h2>
+                <p>Live view of all vehicle cameras.</p>
+            </div>
+            <div class="camera-grid">
+                <div>
+                    <h4 style="margin-bottom:10px; color:var(--text-muted);">Cabin Main</h4>
+                    <img src="/api/live-frame" class="cam-feed" alt="Camera 1" id="driver-cam-feed">
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <button class="btn" style="background-color: var(--surface); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer;" onclick="document.getElementById('driver-cam-feed').src='/api/live-frame?t='+Date.now()">Normal View</button>
+                        <button class="btn" style="background-color: var(--accent); border: none; color: white; padding: 5px 10px; border-radius: 4px; cursor: pointer;" onclick="document.getElementById('driver-cam-feed').src='/api/live-frame-mesh?t='+Date.now()">Face Mesh View</button>
+                    </div>
+                </div>
+                <div>
+                    <h4 style="margin-bottom:10px; color:var(--text-muted);">Dashcam Front (Simulated)</h4>
+                    <div class="cam-feed" style="height: 300px; display:flex; align-items:center; justify-content:center; color:#444;">No Signal</div>
+                </div>
+                <div>
+                    <h4 style="margin-bottom:10px; color:var(--text-muted);">Left Mirror (Simulated)</h4>
+                    <div class="cam-feed" style="height: 300px; display:flex; align-items:center; justify-content:center; color:#444;">No Signal</div>
+                </div>
+                <div>
+                    <h4 style="margin-bottom:10px; color:var(--text-muted);">Right Mirror (Simulated)</h4>
+                    <div class="cam-feed" style="height: 300px; display:flex; align-items:center; justify-content:center; color:#444;">No Signal</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: SAFETY & ALERTS -->
+        <div id="safety-tab" class="tab-pane">
+            <div class="header">
+                <h2>Safety Notifications</h2>
+            </div>
+            
+            <div class="card">
+                <h3>Recent Alerts</h3>
+                <table class="alert-table" id="driver-alerts">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Alert Type</th>
+                            <th>Severity</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Injected by JS -->
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="header" style="margin-top: 30px;">
+                <h2>Emergency Contacts</h2>
+            </div>
+            <div class="emergency-grid">
+                <div class="emergency-card">
+                    <h4>🚑 Ambulance</h4>
+                    <p>x x x x x x x x x x</p>
+                </div>
+                <div class="emergency-card">
+                    <h4>🚓 Police</h4>
+                    <p>x x x x x x x x x x</p>
+                </div>
+                <div class="emergency-card">
+                    <h4>🚒 Fire Department</h4>
+                    <p>x x x x x x x x x x</p>
+                </div>
+                <div class="emergency-card">
+                    <h4>🛣️ Highway Authorities</h4>
+                    <p>x x x x x x x x x x</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="driver.js"></script>
+</body>
+</html>

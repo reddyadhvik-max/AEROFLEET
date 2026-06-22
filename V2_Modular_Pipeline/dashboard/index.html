@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEROFLEET - Unified Login Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a0c;
+            --surface: #141418;
+            --surface-hover: #1c1c22;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #10b981;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: 
+                radial-gradient(circle at 15% 50%, rgba(59, 130, 246, 0.05), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(16, 185, 129, 0.05), transparent 25%);
+        }
+
+        .login-container {
+            background: var(--surface);
+            padding: 3rem;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            margin-bottom: 3rem;
+            font-size: 0.95rem;
+        }
+
+        .role-btn {
+            display: block;
+            width: 100%;
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 1.1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .role-btn:hover {
+            background: var(--surface-hover);
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px -10px rgba(59, 130, 246, 0.2);
+        }
+
+        .role-btn.admin {
+            border-left: 4px solid var(--primary);
+        }
+
+        .role-btn.driver {
+            border-left: 4px solid var(--accent);
+        }
+
+        .login-form {
+            display: none;
+            margin-top: 1.5rem;
+            text-align: left;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 0.9rem 1rem;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 0.9rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .submit-btn:hover {
+            background: var(--primary-hover);
+        }
+        
+        .back-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .back-btn:hover {
+            color: var(--text-main);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-container">
+        <div class="logo">AEROFLEET</div>
+        <div class="subtitle">Unified Telematics Platform</div>
+
+        <div id="role-selection">
+            <button class="role-btn admin" onclick="showLogin('admin')">
+                Administrator Login
+            </button>
+            <button class="role-btn driver" onclick="showLogin('driver')">
+                Driver / Vehicle Login
+            </button>
+        </div>
+
+        <div id="login-form" class="login-form">
+            <button class="back-btn" onclick="showRoles()">← Back</button>
+            <form id="auth-form" onsubmit="handleLogin(event)">
+                <input type="hidden" id="login-type">
+                
+                <div class="input-group">
+                    <label>Username / ID</label>
+                    <input type="text" id="username" required>
+                </div>
+                
+                <div class="input-group">
+                    <label>Password / PIN</label>
+                    <input type="password" id="password" required>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submit-btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function showLogin(type) {
+            document.getElementById('role-selection').style.display = 'none';
+            document.getElementById('login-form').style.display = 'block';
+            document.getElementById('login-type').value = type;
+            
+            const btn = document.getElementById('submit-btn');
+            btn.style.background = type === 'admin' ? 'var(--primary)' : 'var(--accent)';
+            
+            // Clear inputs
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+        }
+
+        function showRoles() {
+            document.getElementById('role-selection').style.display = 'block';
+            document.getElementById('login-form').style.display = 'none';
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const type = document.getElementById('login-type').value;
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            // Simple basic auth logic
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user, password: pass })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status === 'ok') {
+                        if (type === 'admin') {
+                            localStorage.setItem('admin_access_token', data.access_token);
+                        } else {
+                            localStorage.setItem('driver_access_token', data.access_token);
+                        }
+                        localStorage.setItem('driver_login', user);
+                        if (data.truck_id) localStorage.setItem('truck_id', data.truck_id);
+                        if (data.driver_name) localStorage.setItem('driver_name', data.driver_name);
+                        window.location.href = data.redirect;
+                    }
+                } else {
+                    const errData = await res.json();
+                    alert("Login blocked: " + (errData.detail || "Invalid credentials"));
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Server connection failed");
+            }
+        }
+    </script>
+</body>
+</html>

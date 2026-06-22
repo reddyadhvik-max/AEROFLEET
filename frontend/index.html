@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aerofleet — Command Center</title>
+    <meta name="description" content="Real-time fleet telemetry monitoring and alert management system">
+    
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Custom Styles (includes font imports) -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+        <div class="login-panel">
+            <div class="logo-mark">A</div>
+            <h2>Aerofleet</h2>
+            <div class="subtitle">Command Center</div>
+            <div>
+                <label>Username</label>
+                <input type="text" id="login-user" autocomplete="off">
+            </div>
+            <div>
+                <label>Password</label>
+                <input type="password" id="login-pass">
+            </div>
+            <div id="login-error" class="login-error">Invalid credentials</div>
+            <button id="login-btn" class="login-btn">Authenticate →</button>
+        </div>
+    </div>
+
+    <!-- App Container -->
+    <div id="app-container" class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="brand-mark">A</div>
+                <div class="brand-text">Aerofleet <span>Command</span></div>
+            </div>
+            <div class="header-right">
+                <div id="upload-status" class="upload-status"></div>
+                <div class="status-badge">
+                    <div class="dot"></div>
+                    System Online
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-grid">
+            
+            <!-- Left Panel: Map -->
+            <div class="map-panel">
+                <div class="map-label">◉ Fleet Tracker</div>
+                <div id="truck-info-overlay" class="truck-info-overlay">
+                    <div id="selected-truck-name" class="truck-name">TRK-001</div>
+                    <div id="selected-truck-model" class="truck-model">Freightliner Cascadia</div>
+                </div>
+                <div class="map-container">
+                    <div id="map"></div>
+                </div>
+                <!-- Emergency section at bottom of map panel -->
+                <div class="emergency-section">
+                    <select id="alert-type-selector">
+                        <option value="CRITICAL|Collision / Accident">⚠ Collision / Accident</option>
+                        <option value="CRITICAL|Medical Emergency">⚠ Medical Emergency</option>
+                        <option value="CRITICAL|Cargo bay breach">⚠ Cargo bay breach</option>
+                        <option value="CRITICAL|Driver incapacitation">⚠ Driver incapacitation</option>
+                        <option value="HIGH|Engine Fault">▲ Engine Fault</option>
+                        <option value="HIGH|Overheating">▲ Overheating</option>
+                        <option value="HIGH|Drowsiness detected">▲ Drowsiness detected</option>
+                        <option value="HIGH|Phone use while driving">▲ Phone use while driving</option>
+                        <option value="MEDIUM|Traffic Incident">● Traffic Incident</option>
+                        <option value="LOW|Route deviation">○ Route deviation</option>
+                    </select>
+                    <button id="emergency-btn" class="emergency-btn">Raise Alert</button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Telemetry, Rollups, Chart, Alerts -->
+            <div class="right-panel">
+                <!-- Live Telemetry -->
+                <div class="panel-card">
+                    <div class="card-header">
+                        <div class="indicator"></div>
+                        Live Telemetry
+                    </div>
+                    <div class="telemetry-grid">
+                        <div class="tel-item">
+                            <div class="tel-label">Engine RPM</div>
+                            <div><span id="val-rpm" class="tel-value">0</span> <span class="tel-unit">rpm</span></div>
+                        </div>
+                        <div class="tel-item">
+                            <div class="tel-label">Speed</div>
+                            <div><span id="val-speed" class="tel-value">0</span> <span class="tel-unit">km/h</span></div>
+                        </div>
+                        <div class="tel-item">
+                            <div class="tel-label">Coolant</div>
+                            <div><span id="val-coolant" class="tel-value">0</span> <span class="tel-unit">°F</span></div>
+                        </div>
+                        <div class="tel-item">
+                            <div class="tel-label">Oil PSI</div>
+                            <div><span id="val-oil" class="tel-value">0</span> <span class="tel-unit">psi</span></div>
+                        </div>
+                        <div class="tel-item">
+                            <div class="tel-label">Boost</div>
+                            <div><span id="val-boost" class="tel-value">0</span> <span class="tel-unit">psi</span></div>
+                        </div>
+                        <div class="tel-item">
+                            <div class="tel-label">Fuel Rate</div>
+                            <div><span id="val-fuel" class="tel-value">0.0</span> <span class="tel-unit">gal/hr</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rollups -->
+                <div class="panel-card">
+                    <div class="card-header">
+                        <div class="indicator amber"></div>
+                        Analytics
+                    </div>
+                    <div class="rollup-grid">
+                        <div class="rollup-item cyan">
+                            <div class="rollup-label">1m Avg Speed</div>
+                            <div><span id="rollup-1m-speed" class="rollup-value">--</span> <span class="rollup-unit">km/h</span></div>
+                        </div>
+                        <div class="rollup-item pink">
+                            <div class="rollup-label">1m Max Brake G</div>
+                            <div><span id="rollup-1m-brake" class="rollup-value">--</span> <span class="rollup-unit">g</span></div>
+                        </div>
+                        <div class="rollup-item cyan">
+                            <div class="rollup-label">1h Avg Speed</div>
+                            <div><span id="rollup-1h-speed" class="rollup-value">--</span> <span class="rollup-unit">km/h</span></div>
+                        </div>
+                        <div class="rollup-item pink">
+                            <div class="rollup-label">1h Harsh Brakes</div>
+                            <div><span id="rollup-1h-brakes" class="rollup-value">--</span> <span class="rollup-unit">events</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart -->
+                <div class="panel-card">
+                    <div class="card-header">
+                        <div class="indicator cyan"></div>
+                        Trends
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="telemetryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Alert Feed -->
+                <div class="panel-card" style="flex:1;">
+                    <div class="card-header">
+                        <div class="indicator red"></div>
+                        Active Alerts — All Trucks
+                    </div>
+                    <div id="alert-feed" class="alert-feed">
+                        <div class="no-alerts-msg">No active alerts</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

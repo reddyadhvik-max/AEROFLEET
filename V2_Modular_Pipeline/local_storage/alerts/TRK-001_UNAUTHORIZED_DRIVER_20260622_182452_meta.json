@@ -1,0 +1,12 @@
+{
+  "event_id": "TRK-001_UNAUTHORIZED_DRIVER_20260622_182452",
+  "event_type": "UNAUTHORIZED_DRIVER",
+  "truck_id": "TRK-001",
+  "driver_id": null,
+  "driver_name": "Unverified",
+  "timestamp": 1782132892.6980782,
+  "timestamp_str": "20260622_182452",
+  "full_clip_path": "C:\\Users\\reddy\\OneDrive\\Desktop\\AEROFLEET\\V2_Modular_Pipeline\\local_storage\\alerts\\TRK-001_UNAUTHORIZED_DRIVER_20260622_182452_60s.mp4",
+  "short_clip_path": "C:\\Users\\reddy\\OneDrive\\Desktop\\AEROFLEET\\V2_Modular_Pipeline\\local_storage\\alerts\\TRK-001_UNAUTHORIZED_DRIVER_20260622_182452_20s.mp4",
+  "uploaded": false
+}

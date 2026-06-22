@@ -1,0 +1,12 @@
+{
+  "event_id": "TRK-001_DROWSINESS_20260622_192714",
+  "event_type": "DROWSINESS",
+  "truck_id": "TRK-001",
+  "driver_id": null,
+  "driver_name": "Unverified",
+  "timestamp": 1782136634.3319192,
+  "timestamp_str": "20260622_192714",
+  "full_clip_path": "C:\\Users\\reddy\\OneDrive\\Desktop\\AEROFLEET\\V2_Modular_Pipeline\\local_storage\\alerts\\TRK-001_DROWSINESS_20260622_192714_60s.mp4",
+  "short_clip_path": "C:\\Users\\reddy\\OneDrive\\Desktop\\AEROFLEET\\V2_Modular_Pipeline\\local_storage\\alerts\\TRK-001_DROWSINESS_20260622_192714_20s.mp4",
+  "uploaded": false
+}

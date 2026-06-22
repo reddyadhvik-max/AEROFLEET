@@ -1,0 +1,12 @@
+{
+  "event_id": "TRK-001_DISTRACTION_20260622_191237",
+  "event_type": "DISTRACTION",
+  "truck_id": "TRK-001",
+  "driver_id": null,
+  "driver_name": "Unverified",
+  "timestamp": 1782135757.813388,
+  "timestamp_str": "20260622_191237",
+  "full_clip_path": "C:\\Users\\reddy\\OneDrive\\Desktop\\AEROFLEET\\V2_Modular_Pipeline\\local_storage\\alerts\\TRK-001_DISTRACTION_20260622_191237_60s.mp4",
+  "short_clip_path": "C:\\Users\\reddy\\OneDrive\\Desktop\\AEROFLEET\\V2_Modular_Pipeline\\local_storage\\alerts\\TRK-001_DISTRACTION_20260622_191237_20s.mp4",
+  "uploaded": false
+}

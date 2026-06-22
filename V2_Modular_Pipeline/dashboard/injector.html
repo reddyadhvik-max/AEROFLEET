@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEROFLEET V2 — Injector Control Panel</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { padding: 20px; }
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-muted);
+        }
+        .form-group select, .form-group input {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header" style="max-width: 1000px; margin: 0 auto 20px auto;">
+        <h2>V2 Simulation Injector</h2>
+        <p>Manually trigger events and update telemetry for testing.</p>
+    </div>
+
+    <div class="control-panel">
+        <!-- Event Injection -->
+        <div class="card">
+            <h3>Inject Alert Event</h3>
+            <div class="form-group">
+                <label>Target Vehicle</label>
+                <select id="inj-truck-id">
+                    <option value="TRK-001">TRK-001</option>
+                    <option value="TRK-002">TRK-002</option>
+                    <option value="TRK-003">TRK-003</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Event Type</label>
+                <select id="inj-event-type">
+                    <option value="DROWSINESS">Drowsiness</option>
+                    <option value="DISTRACTION">Distraction</option>
+                    <option value="PHONE_USAGE">Phone Usage</option>
+                    <option value="HARD_BRAKING">Hard Braking</option>
+                    <option value="OVERSPEEDING">Overspeeding</option>
+                    <option value="UNAUTHORIZED_DRIVER">Unauthorized Driver</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Severity</label>
+                <select id="inj-severity">
+                    <option value="HIGH">HIGH</option>
+                    <option value="CRITICAL">CRITICAL</option>
+                    <option value="LOW">LOW</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <input type="text" id="inj-desc" value="Manually injected test event">
+            </div>
+            <button class="btn btn-primary" onclick="injectAlert()">Trigger Alert</button>
+        </div>
+
+        <!-- Telemetry Override -->
+        <div class="card">
+            <h3>Override Telemetry</h3>
+            <div class="form-group">
+                <label>Target Vehicle</label>
+                <select id="tel-truck-id">
+                    <option value="TRK-001">TRK-001</option>
+                    <option value="TRK-002">TRK-002</option>
+                    <option value="TRK-003">TRK-003</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Speed (km/h)</label>
+                <input type="number" id="tel-speed" value="70">
+            </div>
+            <div class="form-group">
+                <label>Engine RPM</label>
+                <input type="number" id="tel-rpm" value="1500">
+            </div>
+            <div class="form-group">
+                <label>Fuel Level (%)</label>
+                <input type="number" id="tel-fuel" value="85" max="100" min="0">
+            </div>
+            <button class="btn btn-primary" onclick="overrideTelemetry()">Update Vehicle</button>
+        </div>
+        
+        <div class="card" style="grid-column: 1 / -1; display: flex; gap: 20px;">
+            <div style="flex: 1;">
+                <h3>Face Mesh Feed (Local Engine)</h3>
+                <img id="mesh-feed" src="/api/live-frame-mesh" style="width: 100%; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        setInterval(() => {
+            document.getElementById('mesh-feed').src = `/api/live-frame-mesh?_=${Date.now()}`;
+        }, 500);
+
+        async function injectAlert() {
+            const data = {
+                truck_id: document.getElementById('inj-truck-id').value,
+                type: document.getElementById('inj-event-type').value,
+                severity: document.getElementById('inj-severity').value,
+                description: document.getElementById('inj-desc').value
+            };
+            
+            try {
+                const token = localStorage.getItem('admin_access_token');
+                const headers = {'Content-Type': 'application/json'};
+                if (token) headers['Authorization'] = `Bearer ${token}`;
+
+                const res = await fetch('/api/inject-alert', {
+                    method: 'POST',
+                    headers: headers,
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) {
+                    alert("Alert injected successfully!");
+                }
+            } catch(e) {
+                alert("Failed to inject alert");
+            }
+        }
+
+        async function overrideTelemetry() {
+            // Need lat/lng to push telemetry. If not provided, it just updates stats
+            const truckId = document.getElementById('tel-truck-id').value;
+            
+            // First fetch current to keep lat/lng
+            let lat = 40.7128; let lng = -74.0060;
+            try {
+                const locRes = await fetch('/api/fleet/locations');
+                const locData = await locRes.json();
+                if(locData[truckId]) {
+                    lat = locData[truckId].lat || lat;
+                    lng = locData[truckId].lng || lng;
+                }
+            } catch(e) {}
+            
+            const data = {
+                truck_id: truckId,
+                lat: lat,
+                lng: lng,
+                speed: parseFloat(document.getElementById('tel-speed').value),
+                rpm: parseInt(document.getElementById('tel-rpm').value),
+                fuel: parseFloat(document.getElementById('tel-fuel').value)
+            };
+            
+            try {
+                const res = await fetch('/api/fleet/telemetry', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(data)
+                });
+                if(res.ok) {
+                    alert("Telemetry updated!");
+                }
+            } catch(e) {
+                alert("Failed to update telemetry");
+            }
+        }
+    </script>
+</body>
+</html>
